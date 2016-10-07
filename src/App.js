@@ -19,13 +19,13 @@ class BubbleSort extends Component {
     for (let i = 0; i < 4; i++) {
       bars.push(new Bar('Bar ' + i, randomNum(10,100), i))
     }
+    const nextStep = {
+      targetIndex: 0,
+      type: 'COMPARE'      
+    }
     this.state = {
-      bars,
       barsHistory: [bars],
-      nextStep: {
-        targetIndex: 0,
-        type: 'COMPARE'
-      }
+      stepsHistory: [nextStep]
     }
 
     this.goToPrevStep = this.goToPrevStep.bind(this)
@@ -34,20 +34,21 @@ class BubbleSort extends Component {
 
   goToPrevStep() {
     console.log(this.state)
-    const {barsHistory} = this.state
-    if (barsHistory.length > 1) {
+    const {barsHistory, stepsHistory} = this.state
+    if (barsHistory.length > 1 && stepsHistory.length > 1) {
       this.setState({
-        barsHistory: barsHistory.slice(0,-1)
+        barsHistory: barsHistory.slice(0,-1),
+        stepsHistory: stepsHistory.slice(0,-1)
       })      
     }
   }
 
   goToNextStep() {
-    const {bars, barsHistory, nextStep} = this.state
-    const targetIndex = nextStep.targetIndex
-    console.log(nextStep)
+    const {barsHistory, stepsHistory} = this.state
+    const targetIndex = stepsHistory[stepsHistory.length - 1].targetIndex
+    console.log(this.state)
 
-    const newBars = deepClone(bars)
+    const newBars = deepClone(barsHistory[barsHistory.length - 1])
     let targetedBar, nextBar
     for (let i = 0; i < newBars.length; i++) {
         if (newBars[i].orderIndex === targetIndex) {
@@ -57,7 +58,7 @@ class BubbleSort extends Component {
         } 
     }
 
-    switch (nextStep.type) {
+    switch (stepsHistory[stepsHistory.length - 1].type) {
       case 'COMPARE':
         for (let bar of newBars) {
           bar.style = null
@@ -67,19 +68,17 @@ class BubbleSort extends Component {
 
         if (targetedBar.value > nextBar.value) {
           this.setState({
-            bars: newBars,
             barsHistory: barsHistory.concat([newBars]),
-            nextStep: Object.assign({}, nextStep, {
+            stepsHistory: stepsHistory.concat([Object.assign({}, stepsHistory[stepsHistory.length - 1], {
               type: 'SWITCH'
-            })
+            })])
           })
         } else {
           this.setState({
-            bars: newBars,
             barsHistory: barsHistory.concat([newBars]),
-            nextStep: Object.assign({}, nextStep, {
+            stepsHistory: stepsHistory.concat(Object.assign({}, stepsHistory[stepsHistory.length - 1], {
               targetIndex: targetIndex + 1
-            })
+            }))
           })
         }
         break
@@ -89,12 +88,11 @@ class BubbleSort extends Component {
         nextBar.orderIndex = targetedBarOrderIndex
 
         this.setState({
-          bars: newBars,
           barsHistory: barsHistory.concat([newBars]),
-          nextStep: Object.assign({}, nextStep, {
+          stepsHistory: stepsHistory.concat(Object.assign({}, stepsHistory[stepsHistory.length - 1], {
             type: 'COMPARE',
             targetIndex: targetIndex + 1
-          })
+          }))
         })
         break
       default:
