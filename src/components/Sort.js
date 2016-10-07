@@ -11,8 +11,18 @@ class Sort extends Component {
             stepHistory: [initialStep]
         }, this.props.additionalStates)
 
-        this.goToPrevStep = this.props.goToPrevStep.bind(this)
+        this.goToPrevStep = this.goToPrevStep.bind(this)
         this.goToNextStep = this.props.goToNextStep.bind(this)
+    }
+
+    goToPrevStep() {
+        const {barsHistory, stepHistory} = this.state
+        if (barsHistory.length > 1 && stepHistory.length > 1) {
+          this.setState({
+            barsHistory: barsHistory.slice(0,-1),
+            stepHistory: stepHistory.slice(0,-1)
+          })      
+        }  
     }
 
     render() {
@@ -33,7 +43,6 @@ class Sort extends Component {
 Sort.propTypes = {
     initialBars: PropTypes.array.isRequired,
     initialStep: PropTypes.object.isRequired,
-    goToPrevStep: PropTypes.func.isRequired,
     goToNextStep: PropTypes.func.isRequired,
     additionalStates: PropTypes.object,
     width: PropTypes.string,
