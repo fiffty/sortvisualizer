@@ -25,7 +25,8 @@ class BubbleSort extends Component {
     }
     this.state = {
       barsHistory: [bars],
-      stepsHistory: [nextStep]
+      stepsHistory: [nextStep],
+      swapped: false
     }
 
     this.goToPrevStep = this.goToPrevStep.bind(this)
@@ -33,7 +34,6 @@ class BubbleSort extends Component {
   }
 
   goToPrevStep() {
-    console.log(this.state)
     const {barsHistory, stepsHistory} = this.state
     if (barsHistory.length > 1 && stepsHistory.length > 1) {
       this.setState({
@@ -46,46 +46,64 @@ class BubbleSort extends Component {
   goToNextStep() {
     const {barsHistory, stepsHistory} = this.state
     const targetIndex = stepsHistory[stepsHistory.length - 1].targetIndex
-    console.log(this.state)
 
     const newBars = deepClone(barsHistory[barsHistory.length - 1])
+    const barsToSort = newBars.filter((bar) => !bar.sorted)
+
     let targetedBar, nextBar
-    for (let i = 0; i < newBars.length; i++) {
-        if (newBars[i].orderIndex === targetIndex) {
-          targetedBar = newBars[i]
-        } else if (newBars[i].orderIndex === targetIndex + 1) {
-          nextBar = newBars[i]
+    for (let i = 0; i < barsToSort.length; i++) {
+        if (barsToSort[i].orderIndex === targetIndex) {
+          targetedBar = barsToSort[i]
+        } else if (barsToSort[i].orderIndex === targetIndex + 1) {
+          nextBar = barsToSort[i]
         } 
     }
 
     switch (stepsHistory[stepsHistory.length - 1].type) {
       case 'COMPARE':
-        for (let bar of newBars) {
+        for (let bar of barsToSort) {
           bar.style = null
         }
-        targetedBar.style = {backgroundColor: '#333'}
-        nextBar.style = {backgroundColor: '#555'}
 
-        if (targetedBar.value > nextBar.value) {
-          this.setState({
-            barsHistory: barsHistory.concat([newBars]),
-            stepsHistory: stepsHistory.concat([Object.assign({}, stepsHistory[stepsHistory.length - 1], {
-              type: 'SWITCH'
-            })])
-          })
+        if (nextBar) {
+          targetedBar.style = {backgroundColor: '#333'}
+          nextBar.style = {backgroundColor: '#555'}
+          if (targetedBar.value > nextBar.value) {
+            this.setState({
+              barsHistory: barsHistory.concat([newBars]),
+              stepsHistory: stepsHistory.concat([Object.assign({}, stepsHistory[stepsHistory.length - 1], {
+                type: 'SWITCH'
+              })])
+            })
+          } else {
+            this.setState({
+              barsHistory: barsHistory.concat([newBars]),
+              stepsHistory: stepsHistory.concat(Object.assign({}, stepsHistory[stepsHistory.length - 1], {
+                targetIndex: targetIndex + 1
+              }))
+            })
+          }
         } else {
+          targetedBar.sorted = true
           this.setState({
             barsHistory: barsHistory.concat([newBars]),
             stepsHistory: stepsHistory.concat(Object.assign({}, stepsHistory[stepsHistory.length - 1], {
-              targetIndex: targetIndex + 1
+              targetIndex: 0,
+              type: 'COMPARE'
             }))
           })
         }
+
+
         break
       case 'SWITCH':
         const targetedBarOrderIndex = targetedBar.orderIndex
         targetedBar.orderIndex = nextBar.orderIndex
         nextBar.orderIndex = targetedBarOrderIndex
+
+        // if () {
+
+        // }
 
         this.setState({
           barsHistory: barsHistory.concat([newBars]),

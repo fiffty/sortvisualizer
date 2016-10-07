@@ -2,7 +2,7 @@ import React, {Component, PropTypes} from 'react'
 
 export default class Bar extends Component {
     render() {
-        const {value, orderIndex, label, width, height, style} = this.props
+        const {value, orderIndex, label, width, height, style, sorted} = this.props
 
         const styles = {
             root: {
@@ -31,7 +31,7 @@ export default class Bar extends Component {
             }
         }
         return (
-            <div style={Object.assign({}, styles.root, style)}>
+            <div style={Object.assign({}, styles.root, style, (sorted)?{backgroundColor: '#161A59'}:null)}>
                 {(false) ? <span style={styles.label}>{label}</span> : null}
                 {(true) ? <span style={styles.value}>{value}</span> : null}
             </div>
@@ -45,5 +45,6 @@ Bar.propTypes = {
     label: PropTypes.string,
     width: PropTypes.string,
     height: PropTypes.string,
-    style: PropTypes.object
+    style: PropTypes.object,
+    sorted: PropTypes.bool
 }

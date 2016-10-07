@@ -51,7 +51,8 @@ export default class BarChart extends Component {
                                 label={bar.label}
                                 width={widthOfBars}
                                 height={(bars[i].value/(maxValue - minValue)*100).toFixed(2) + '%'}
-                                style={bar.style} />
+                                style={bar.style}
+                                sorted={bar.sorted} />
                         )
                     })}
                 </div>
