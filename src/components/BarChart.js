@@ -63,7 +63,6 @@ export default class BarChart extends Component {
 
 BarChart.propTypes = {
     bars: PropTypes.array.isRequired,
-    order: PropTypes.array.isRequired,
     width: PropTypes.string,
     height: PropTypes.string,
     minValue: PropTypes.number,

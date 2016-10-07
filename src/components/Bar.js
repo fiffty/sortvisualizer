@@ -12,7 +12,7 @@ export default class Bar extends Component {
                 position: 'absolute',
                 bottom: 0,
                 left: parseFloat(width) * orderIndex + '%',
-                backgroundColor: '#CCCCCC',
+                backgroundColor: '#EEEEEE',
                 transition: '0.5s all ease'
             },
             label: {
@@ -31,7 +31,7 @@ export default class Bar extends Component {
             }
         }
         return (
-            <div style={Object.assign({}, styles.root, style, (sorted)?{backgroundColor: '#161A59'}:null)}>
+            <div style={Object.assign({}, styles.root, style, (sorted)?{backgroundColor: '#FF974F'}:null)}>
                 {(false) ? <span style={styles.label}>{label}</span> : null}
                 {(true) ? <span style={styles.value}>{value}</span> : null}
             </div>
