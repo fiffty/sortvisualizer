@@ -13,7 +13,7 @@ export default class Bar extends Component {
                 bottom: 0,
                 left: parseFloat(width) * orderIndex + '%',
                 backgroundColor: '#EEEEEE',
-                transition: '0.5s all ease'
+                transition: '0.4s all ease'
             },
             label: {
                 display: 'block',

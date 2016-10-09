@@ -9,11 +9,22 @@ class Sort extends Component {
         this.state = Object.assign({
             barsHistory: [initialBars], 
             stepHistory: [initialStep],
-            sortCompleted: false
+            sortCompleted: false,
+            playing: false
         }, this.props.additionalStates)
 
         this.goToPrevStep = this.goToPrevStep.bind(this)
         this.goToNextStep = this.props.goToNextStep.bind(this)
+        this.togglePlay = this.togglePlay.bind(this)
+    }
+
+    componentDidUpdate() {
+
+        if (this.state.playing) {
+            setTimeout((i) => {
+                this.goToNextStep()
+            }, 600)
+        }
     }
 
     goToPrevStep() {
@@ -27,15 +38,22 @@ class Sort extends Component {
         }  
     }
 
+    togglePlay() {
+        this.setState({
+            playing: !this.state.playing
+        })
+    }
+
     render() {
-        const barsHistory = this.state.barsHistory
+        const {barsHistory, playing} = this.state
         const propsToPass = Object.assign({}, this.props, {bars: barsHistory[barsHistory.length - 1]})
         return (
             <div>
-            <button onClick={this.goToPrevStep}>Prev Step</button>
-            <button onClick={this.goToNextStep}>Next Step</button>
-            <BarChart 
-                {...propsToPass}  />
+                <BarChart 
+                    {...propsToPass}  />
+                <button onClick={this.goToPrevStep}>Prev Step</button>
+                <button onClick={this.goToNextStep}>Next Step</button>
+                <button onClick={this.togglePlay}>{(playing) ? 'Pause' : 'Play'}</button>
             </div>
         );
     }

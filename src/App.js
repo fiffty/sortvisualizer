@@ -3,7 +3,7 @@ import BarChart from './components/BarChart'
 import Sort from './components/Sort'
 
 const bars = []
-for (let i = 0; i < 3; i++) {
+for (let i = 0; i < 10; i++) {
   bars.push(new Bar('Bar ' + i, randomNum(10,100), i))
 }
 
@@ -77,7 +77,8 @@ class BubbleSort extends Component {
                   stepHistory: stepHistory.concat(Object.assign({}, currentStep, {
                     targetIndex: 0,
                     type: 'COMPARE'
-                  }))
+                  })),
+                  swapped: false
                 })
               }
             }
@@ -250,8 +251,8 @@ class SelectSort extends Component {
   }
 }
 
-export default BubbleSort
-// export default SelectSort
+// export default BubbleSort
+export default SelectSort
 
 function randomNum(min, max) {
   return Math.floor(Math.random() * (max - min)) + min
