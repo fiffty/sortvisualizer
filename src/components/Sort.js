@@ -8,7 +8,8 @@ class Sort extends Component {
         const {initialBars, initialStep} = this.props
         this.state = Object.assign({
             barsHistory: [initialBars], 
-            stepHistory: [initialStep]
+            stepHistory: [initialStep],
+            sortCompleted: false
         }, this.props.additionalStates)
 
         this.goToPrevStep = this.goToPrevStep.bind(this)
@@ -20,13 +21,13 @@ class Sort extends Component {
         if (barsHistory.length > 1 && stepHistory.length > 1) {
           this.setState({
             barsHistory: barsHistory.slice(0,-1),
-            stepHistory: stepHistory.slice(0,-1)
+            stepHistory: stepHistory.slice(0,-1),
+            sortCompleted: false
           })      
         }  
     }
 
     render() {
-        console.log(this.state)
         const barsHistory = this.state.barsHistory
         const propsToPass = Object.assign({}, this.props, {bars: barsHistory[barsHistory.length - 1]})
         return (

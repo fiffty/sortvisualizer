@@ -3,19 +3,26 @@ import BarChart from './components/BarChart'
 import Sort from './components/Sort'
 
 const bars = []
-for (let i = 0; i < 10; i++) {
+for (let i = 0; i < 3; i++) {
   bars.push(new Bar('Bar ' + i, randomNum(10,100), i))
 }
 
 class BubbleSort extends Component {
   render() {
     function goToNextStep() {
-        const {barsHistory, stepHistory} = this.state
+        const {barsHistory, stepHistory, swapped, sortCompleted} = this.state
+        if (sortCompleted) return
         const currentStep = stepHistory[stepHistory.length - 1]
         const targetIndex = currentStep.targetIndex
 
         const newBars = deepClone(barsHistory[barsHistory.length - 1])
         const barsToSort = newBars.filter((bar) => !bar.sorted)
+
+        if (barsToSort.length === 0 && !swapped) {
+          this.setState({
+            sortCompleted: true
+          })
+        }
 
         let aBar, bBar
         for (let i = 0; i < barsToSort.length; i++) {
@@ -51,17 +58,29 @@ class BubbleSort extends Component {
                 })
               }
             } else {
-              aBar.sorted = true
-              this.setState({
-                barsHistory: barsHistory.concat([newBars]),
-                stepHistory: stepHistory.concat(Object.assign({}, currentStep, {
-                  targetIndex: 0,
-                  type: 'COMPARE'
-                }))
-              })
+              if (barsToSort.length <= 1 || !swapped) {
+                for (let bar of barsToSort) {
+                  bar.sorted = true
+                }
+                this.setState({
+                  barsHistory: barsHistory.concat([newBars]),
+                  stepHistory: stepHistory.concat(Object.assign({}, currentStep, {
+                    targetIndex: 0,
+                    type: 'FINISH'
+                  })),
+                  sortCompleted: true
+                })
+              } else {
+                aBar.sorted = true
+                this.setState({
+                  barsHistory: barsHistory.concat([newBars]),
+                  stepHistory: stepHistory.concat(Object.assign({}, currentStep, {
+                    targetIndex: 0,
+                    type: 'COMPARE'
+                  }))
+                })
+              }
             }
-
-
             break
           case 'SWITCH':
             const aBarOrderIndex = aBar.orderIndex
@@ -72,8 +91,9 @@ class BubbleSort extends Component {
               barsHistory: barsHistory.concat([newBars]),
               stepHistory: stepHistory.concat(Object.assign({}, currentStep, {
                 type: 'COMPARE',
-                targetIndex: targetIndex + 1
-              }))
+                targetIndex: targetIndex + 1,
+              })),
+              swapped: true
             })
             break
           default:
@@ -134,15 +154,12 @@ class SelectSort extends Component {
               bar.style = null
             }
             aBar.sorted = true
-            console.log(aBar)
-            console.log(numOfSorted)
             if (aBar.orderIndex !== numOfSorted - 1) {
               for (let i = 0; i < barsToSort.length; i++) {
                 if (barsToSort[i].orderIndex === numOfSorted) {
                   barsToSort[i].orderIndex = aBar.orderIndex
                 }
               }
-              // barsToSort[numOfSorted].orderIndex = aBar.orderIndex
               aBar.orderIndex = numOfSorted
             }
 
@@ -225,7 +242,6 @@ class SelectSort extends Component {
       <Sort 
         initialBars={bars}
         initialStep={nextStep}
-        additionalStates={{swapped: false}}
         width={'600px'}
         height={'400px'}
         goToNextStep={goToNextStep}
@@ -234,8 +250,8 @@ class SelectSort extends Component {
   }
 }
 
-// export default BubbleSort
-export default SelectSort
+export default BubbleSort
+// export default SelectSort
 
 function randomNum(min, max) {
   return Math.floor(Math.random() * (max - min)) + min
