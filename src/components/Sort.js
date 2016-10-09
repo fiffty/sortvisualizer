@@ -19,8 +19,11 @@ class Sort extends Component {
     }
 
     componentDidUpdate() {
-
-        if (this.state.playing) {
+        if (this.state.sortCompleted && this.state.playing) {
+            this.setState({
+                playing: false
+            })
+        } else if (this.state.playing) {
             setTimeout((i) => {
                 this.goToNextStep()
             }, 600)

@@ -3,7 +3,7 @@ import BarChart from './components/BarChart'
 import Sort from './components/Sort'
 
 const bars = []
-for (let i = 0; i < 10; i++) {
+for (let i = 0; i < 4; i++) {
   bars.push(new Bar('Bar ' + i, randomNum(10,100), i))
 }
 
@@ -125,7 +125,8 @@ class BubbleSort extends Component {
 class SelectSort extends Component {
   render() {
     function goToNextStep() {
-        const {barsHistory, stepHistory} = this.state
+        const {barsHistory, stepHistory, sortCompleted} = this.state
+        if (sortCompleted) return
         const currentStep = stepHistory[stepHistory.length - 1]
         const aIndex = currentStep.aIndex
         const bIndex = currentStep.bIndex
@@ -164,13 +165,23 @@ class SelectSort extends Component {
               aBar.orderIndex = numOfSorted
             }
 
-            this.setState({
-              barsHistory: barsHistory.concat([newBars]),
-              stepHistory: stepHistory.concat(Object.assign({}, currentStep, {
-                type: 'SELECT_AS_MIN',
-                aIndex: numOfSorted + 1
-              }))
-            })              
+            if (numOfSorted === barsToSort.length - 1) {
+              this.setState({
+                barsHistory: barsHistory.concat([newBars]),
+                stepHistory: stepHistory.concat(Object.assign({}, currentStep, {
+                  type: 'FINISH',
+                })),
+                sortCompleted: true
+              })
+            } else {
+              this.setState({
+                barsHistory: barsHistory.concat([newBars]),
+                stepHistory: stepHistory.concat(Object.assign({}, currentStep, {
+                  type: 'SELECT_AS_MIN',
+                  aIndex: numOfSorted + 1
+                }))
+              })  
+            }
             break
           case 'COMPARE':
             for (let bar of barsToSort) {
