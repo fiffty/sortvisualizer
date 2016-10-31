@@ -1,120 +1,109 @@
 import React, {Component} from 'react'
 import BarChart from './components/BarChart'
 import Sort from './components/Sort'
-
-const bars = []
-for (let i = 0; i < 4; i++) {
-  bars.push(new Bar('Bar ' + i, randomNum(10,100), i))
-}
+const Rx = require('rxjs/Rx')
+const Observable = Rx.Observable
 
 class BubbleSort extends Component {
-  render() {
-    function goToNextStep() {
-        const {barsHistory, stepHistory, swapped, sortCompleted} = this.state
-        if (sortCompleted) return
-        const currentStep = stepHistory[stepHistory.length - 1]
-        const targetIndex = currentStep.targetIndex
+  constructor() {
+    super();
 
-        const newBars = deepClone(barsHistory[barsHistory.length - 1])
-        const barsToSort = newBars.filter((bar) => !bar.sorted)
+    const initialSortState = {
+      currentBars: new Array(4).fill().map((x,i) => new Bar('Bar ' + i, randomNum(10,100), i)),
+      nextStep: {targetIndex: 0, type: 'COMPARE'}     
+    }
 
-        if (barsToSort.length === 0 && !swapped) {
-          this.setState({
-            sortCompleted: true
-          })
-        }
+    this.state = {
+      sortState: initialSortState
+    }
 
-        let aBar, bBar
-        for (let i = 0; i < barsToSort.length; i++) {
-            if (barsToSort[i].orderIndex === targetIndex) {
-              aBar = barsToSort[i]
-            } else if (barsToSort[i].orderIndex === targetIndex + 1) {
-              bBar = barsToSort[i]
-            } 
-        }
+    this.actionEvent$ = Observable.fromEvent(document, 'action').throttle(e => Rx.Observable.interval(200)).map(e => e.detail)
 
-        switch (currentStep.type) {
-          case 'COMPARE':
-            for (let bar of barsToSort) {
-              bar.style = null
-            }
 
-            if (bBar) {
-              aBar.style = {backgroundColor: '#3F5765'}
-              bBar.style = {backgroundColor: '#BDD4DE'}
-              if (aBar.value > bBar.value) {
-                this.setState({
-                  barsHistory: barsHistory.concat([newBars]),
-                  stepHistory: stepHistory.concat([Object.assign({}, currentStep, {
-                    type: 'SWITCH'
-                  })])
-                })
-              } else {
-                this.setState({
-                  barsHistory: barsHistory.concat([newBars]),
-                  stepHistory: stepHistory.concat(Object.assign({}, currentStep, {
-                    targetIndex: targetIndex + 1
-                  }))
-                })
-              }
+    this.sortHistory$ = this.actionEvent$
+    .scan((acc, curr) => {
+      if (curr.request === 'GO_TO_NEXT_STEP') {
+        return acc.concat(getNextSortState(acc[acc.length - 1]))
+      } else if (curr.request === 'GO_TO_PREV_STEP') {
+        return (acc.length <= 1) ? acc : acc.slice(0, acc.length -1)
+      }
+    }, [initialSortState])
+
+    this.sortHistory$.subscribe(x => {
+      console.log(x)
+      this.setState({
+        sortState: x[x.length - 1]
+      })
+    })
+
+    function getNextSortState(sortState) {
+      const {currentBars, nextStep, swapped, sortCompleted} = sortState
+      if (sortCompleted) return
+      const nextBars = deepClone(currentBars)
+      const targetIndex = nextStep.targetIndex
+      const barsToSort = nextBars.filter(bar => !bar.sorted)
+      const barA = barsToSort.filter(bar => bar.orderIndex === targetIndex)[0]
+      const barB = barsToSort.filter(bar => bar.orderIndex === targetIndex + 1)[0]
+
+      switch (nextStep.type) {
+        case 'COMPARE':
+          barsToSort.forEach(bar => {bar.style = null})
+          console.log(barA, barB)
+
+          if (barB) {
+            barA.style = {backgroundColor: '#3F5765'}
+            barB.style = {backgroundColor: '#BDD4DE'}
+            if (barA.value > barB.value) {
+              return Object.assign({}, sortState, {
+                currentBars: nextBars,
+                nextStep: Object.assign({}, nextStep, {type: 'SWITCH'})
+              })
             } else {
-              if (barsToSort.length <= 1 || !swapped) {
-                for (let bar of barsToSort) {
-                  bar.sorted = true
-                }
-                this.setState({
-                  barsHistory: barsHistory.concat([newBars]),
-                  stepHistory: stepHistory.concat(Object.assign({}, currentStep, {
-                    targetIndex: 0,
-                    type: 'FINISH'
-                  })),
-                  sortCompleted: true
-                })
-              } else {
-                aBar.sorted = true
-                this.setState({
-                  barsHistory: barsHistory.concat([newBars]),
-                  stepHistory: stepHistory.concat(Object.assign({}, currentStep, {
-                    targetIndex: 0,
-                    type: 'COMPARE'
-                  })),
-                  swapped: false
-                })
-              }
+              return Object.assign({}, sortState, {
+                currentBars: nextBars,
+                nextStep: Object.assign({}, nextStep, {targetIndex: targetIndex + 1})
+              })
             }
-            break
-          case 'SWITCH':
-            const aBarOrderIndex = aBar.orderIndex
-            aBar.orderIndex = bBar.orderIndex
-            bBar.orderIndex = aBarOrderIndex
+          } else {
+            if (barsToSort.length <= 1 && !swapped) {
+              barsToSort.forEach(bar => {bar.sorted = true})
+              return Object.assign({}, sortState, {
+                currentBars: nextBars,
+                nextStep: Object.assign({}, nextStep, {targetIndex: 0, type: 'FINISH'}),
+                sortCompleted: true
+              })
+            } else {
+              barA.sorted = true
+              return Object.assign({}, sortState, {
+                currentBars: nextBars,
+                nextStep: Object.assign({}, nextStep, {targetIndex: 0, type: 'COMPARE'}),
+                swapped: false
+              })
+            }
+          }
+        case 'SWITCH':
+          const barAOrderIndex = barA.orderIndex
+          barA.orderIndex = barB.orderIndex
+          barB.orderIndex = barAOrderIndex
 
-            this.setState({
-              barsHistory: barsHistory.concat([newBars]),
-              stepHistory: stepHistory.concat(Object.assign({}, currentStep, {
-                type: 'COMPARE',
-                targetIndex: targetIndex + 1,
-              })),
-              swapped: true
-            })
-            break
-          default:
-            break             
-        }
+          return Object.assign({}, sortState, {
+            currentBars: nextBars,
+            nextStep: Object.assign({}, nextStep, {type: 'COMPARE',targetIndex: targetIndex + 1}),
+            swapped: true
+          })
+        default:
+          break             
+      }      
     }
+  }
 
-    const nextStep = {
-      targetIndex: 0,
-      type: 'COMPARE'      
-    }
-
+  render() {
     return (
       <Sort 
-        initialBars={bars}
-        initialStep={nextStep}
+        sortState={this.state.sortState}
         additionalStates={{swapped: false}}
         width={'600px'}
         height={'400px'}
-        goToNextStep={goToNextStep}
         />
     )
   }
@@ -252,7 +241,6 @@ class SelectSort extends Component {
 
     return (
       <Sort 
-        initialBars={bars}
         initialStep={nextStep}
         width={'600px'}
         height={'400px'}
@@ -262,8 +250,8 @@ class SelectSort extends Component {
   }
 }
 
-// export default BubbleSort
-export default SelectSort
+export default BubbleSort
+// export default SelectSort
 
 function randomNum(min, max) {
   return Math.floor(Math.random() * (max - min)) + min

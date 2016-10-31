@@ -2,16 +2,9 @@ import React, {Component, PropTypes} from 'react'
 import Bar from './Bar'
 
 export default class BarChart extends Component {
-    constructor(props) {
-        super(props)
-        this.state = {
-            test: 0
-        }
-    }
-
-    render() {
+        render() {
         // Required props
-        const {bars, order} = this.props
+        const {bars} = this.props
         // Optional props
         const {width, height} = this.props
         const minValue = (this.props.minValue) ? this.props.minValue : 0
@@ -62,7 +55,7 @@ export default class BarChart extends Component {
 }
 
 BarChart.propTypes = {
-    bars: PropTypes.array.isRequired,
+    bars: PropTypes.array,
     width: PropTypes.string,
     height: PropTypes.string,
     minValue: PropTypes.number,
