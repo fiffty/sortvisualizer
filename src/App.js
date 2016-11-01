@@ -14,31 +14,57 @@ class BubbleSort extends Component {
     }
 
     this.state = {
-      sortState: initialSortState
+      sortState: initialSortState,
+      playing: false
     }
 
-    this.actionEvent$ = Observable.fromEvent(document, 'action').throttle(e => Rx.Observable.interval(200)).map(e => e.detail)
+    this.actions$ = Observable.fromEvent(document, 'action').throttle(e => Rx.Observable.interval(400)).map(e => e.detail)
 
-
-    this.sortHistory$ = this.actionEvent$
+    this.sortHistory$ = this.actions$
+    .mergeMap(action => {
+      if (!this.state.playing) {
+        if (action.request === 'TOGGLE_PLAY') {
+          return Observable.interval(500)
+            .startWith(1)
+            .takeUntil(this.actions$)
+            .takeWhile(x => !this.state.sortState.sortCompleted)
+            .map(x => {return {request: 'GO_TO_NEXT_STEP'}})
+            .do(x => {if (!this.state.playing) {this.setState({playing: true})}})
+            .finally(() => {this.setState({playing: false})})
+        } else {
+          return Observable.of(action)
+        }
+      } else {
+        return Observable.of(action)
+      }
+    })
     .scan((acc, curr) => {
+      const latestState = acc[acc.length - 1]
       if (curr.request === 'GO_TO_NEXT_STEP') {
-        return acc.concat(getNextSortState(acc[acc.length - 1]))
+        return latestState.sortCompleted ? acc : acc.concat(getNextSortState(latestState))
       } else if (curr.request === 'GO_TO_PREV_STEP') {
         return (acc.length <= 1) ? acc : acc.slice(0, acc.length -1)
+      } else if (curr.request === 'ADD_RANDOM') {
+        const newBar = new Bar('Bar ' + latestState.currentBars.length, randomNum(10,100), latestState.currentBars.length)
+        const nextState = {
+          currentBars: latestState.currentBars.map(bar => Object.assign({},bar,{sorted:false})).concat(newBar),
+          nextStep: {targetIndex: 0, type: 'COMPARE'}  
+        }
+        return acc.concat([nextState])
+      } else {
+        return acc
       }
     }, [initialSortState])
 
     this.sortHistory$.subscribe(x => {
-      console.log(x)
+      // console.log(x)
       this.setState({
         sortState: x[x.length - 1]
       })
     })
 
     function getNextSortState(sortState) {
-      const {currentBars, nextStep, swapped, sortCompleted} = sortState
-      if (sortCompleted) return
+      const {currentBars, nextStep, swapped} = sortState
       const nextBars = deepClone(currentBars)
       const targetIndex = nextStep.targetIndex
       const barsToSort = nextBars.filter(bar => !bar.sorted)
@@ -99,12 +125,16 @@ class BubbleSort extends Component {
 
   render() {
     return (
+      <div>
       <Sort 
+        playing={this.state.playing}
+        sortCompleted={this.state.sortState.sortCompleted}
         sortState={this.state.sortState}
         additionalStates={{swapped: false}}
         width={'600px'}
         height={'400px'}
         />
+      </div>
     )
   }
 }
