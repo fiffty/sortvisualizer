@@ -8,6 +8,11 @@ body {
   box-sizing: border-box;
 }
 
+.barchart-container {
+  width: 100%;
+  background-color: #EEE;
+}
+
 .bar {
   cursor: pointer;
 }

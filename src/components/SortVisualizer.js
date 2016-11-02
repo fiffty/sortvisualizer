@@ -1,7 +1,7 @@
 import React, {Component, PropTypes} from 'react'
 import BarChart from './BarChart'
 
-class Sort extends Component {
+class SortVisualizer extends Component {
     constructor(props) {
         super(props)
         this.state = {
@@ -52,11 +52,13 @@ class Sort extends Component {
         const {playing} = this.props
         const {width, height, sortState} = this.props
         return (
-            <div>
-                <BarChart 
-                    bars={sortState.currentBars}
-                    width={width}
-                    height={height}  />
+            <div className="sort-visualizer">
+                <div className="barchart-container">
+                    <BarChart 
+                        bars={sortState.currentBars}
+                        width={width}
+                        height={height}  />
+                </div>
                 <button onClick={this.goToPrevStep}>Prev Step</button>
                 <button onClick={this.goToNextStep}>Next Step</button>
                 <button onClick={this.togglePlay}>{(playing) ? 'Pause' : 'Play'}</button>
@@ -66,10 +68,10 @@ class Sort extends Component {
     }
 }
 
-Sort.propTypes = {
+SortVisualizer.propTypes = {
     additionalStates: PropTypes.object,
     width: PropTypes.string,
     height: PropTypes.string
 }
 
-export default Sort
+export default SortVisualizer

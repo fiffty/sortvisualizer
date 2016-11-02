@@ -25,7 +25,6 @@ export default class BarChart extends Component {
             root: {
                 width: '100%',
                 height: '100%',
-                backgroundColor: '#EEE',
                 margin: '0px auto',
                 padding: '20px 20px 0px 20px'
             },
