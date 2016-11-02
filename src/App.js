@@ -61,7 +61,6 @@ class BubbleSort extends Component {
     }, [this.state.sortState])
 
     this.sortHistory$.subscribe(x => {
-      // console.log(x)
       this.setState({
         sortState: x[x.length - 1]
       })
@@ -76,6 +75,7 @@ class BubbleSort extends Component {
 
     const barMouseDowns = Observable.fromEvent(barElems, 'mousedown')
     .do((e) => {
+      document.dispatchEvent(new CustomEvent('action',{detail:{request:'PAUSE'}}))
       e.target.style.zIndex = 999
       e.target.style.cursor = 'ew-resize'
     })
