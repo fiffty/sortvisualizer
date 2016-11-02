@@ -65,48 +65,6 @@ class BubbleSort extends Component {
         sortState: x[x.length - 1]
       })
     })
-
-    const barsContainerElem = document.getElementById('bars-container')
-    const barElems = document.getElementsByClassName('bar')
-    const boundaries = {
-      left: barsContainerElem.getBoundingClientRect().left,
-      right: barsContainerElem.getBoundingClientRect().left + barsContainerElem.getBoundingClientRect().width
-    }
-
-    const barMouseDowns = Observable.fromEvent(barElems, 'mousedown')
-    .do((e) => {
-      document.dispatchEvent(new CustomEvent('action',{detail:{request:'PAUSE'}}))
-      e.target.style.zIndex = 999
-      e.target.style.cursor = 'ew-resize'
-    })
-
-    const barsContainerMouseMoves = Observable.fromEvent(barsContainerElem, 'mousemove')
-
-    const barsContainerMouseUps = Observable.fromEvent(barsContainerElem, 'mouseup')
-    .do((e) => {
-      e.target.style.transition = '0.3s all ease'
-      e.target.style.transform = 'translate3d(0px,0px,0px)'
-      e.target.style.zIndex = 1
-      e.target.style.cursor = 'pointer'
-      setTimeout(() => {
-          e.target.style.transition = '0.4s left ease'
-      }, 300)
-    })
-    
-    
-    const barsMouseDrags = barMouseDowns
-    .concatMap(contactPoint => {
-        const bar = contactPoint.target
-
-        return barsContainerMouseMoves
-        .filter(e => e.target === bar)
-        .takeUntil(barsContainerMouseUps)
-        .takeWhile(e => e.target.getBoundingClientRect().left > boundaries.left && e.target.getBoundingClientRect().left + e.target.getBoundingClientRect().width < boundaries.right)
-        .map(movePoint =>  { return {e: movePoint, pageX: movePoint.pageX - contactPoint.pageX}})
-    })
-    .forEach(obj => {
-        obj.e.target.style.transform = `translate3d(${obj.pageX}px,0px,0px)`
-    })
   }
 
   render() {

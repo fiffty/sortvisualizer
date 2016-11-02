@@ -4,34 +4,60 @@ const Observable = Rx.Observable
 
 export default class Bar extends Component {
     componentDidMount() {
-        // const barMouseDowns = Observable.fromEvent(this.refs.bar, 'mousedown')
-        // const barsContainerMouseMoves = Observable.fromEvent(document.getElementById('bars-container'), 'mousemove')
-        // .do(() => {
-        //     this.refs.bar.style.zIndex = 999
-        // })
-        // const barsContainerMouseUps = Observable.fromEvent(document.getElementById('bars-container'), 'mouseup')
-        // .do(() => {
-        //     this.refs.bar.style.transition = '0.3s all ease'
-        //     this.refs.bar.style.transform = 'translate3d(0px,0px,0px)'
-        //     this.refs.bar.style.zIndex = 1
-        //     setTimeout(() => {
-        //         this.refs.bar.style.transition = '0.4s left ease'
-        //     }, 300)
-        // })
+        const barsContainerElem = document.getElementById('bars-container')
+        const barElem = this.refs.bar
+        const boundaries = {
+            left: barsContainerElem.getBoundingClientRect().left,
+            right: barsContainerElem.getBoundingClientRect().left + barsContainerElem.getBoundingClientRect().width
+        }
+
+        /* --------------------------------------------------
+        HACKS FOR HTML5 DRAG & DROP API 
+        -------------------------------------------------- */
+        // hack to remove drag image
+        barElem.addEventListener('dragstart', (e) => {
+            const img = document.createElement("img");
+            img.src = "https://static.beadsjar.co.uk/image/cache/data/journal2/transparent-250x250.png";
+            e.dataTransfer.setDragImage(img, 0, 0);            
+        }, false)
+        // hack to remove last drag event 
+        // which has x & y values set to 0
+        document.addEventListener("dragover", (e) => {
+            e.preventDefault();
+        }, false);
+        /* --------------------------------------------------
+        END OF HACKS FOR HTML5 DRAG & DROP API 
+        -------------------------------------------------- */
+
+        const barMouseDragStart = Observable.fromEvent(barElem, 'dragstart')
+        .do((e) => {
+            document.dispatchEvent(new CustomEvent('action',{detail:{request:'PAUSE'}}))
+            e.target.style.zIndex = 999
+            e.target.style.cursor = 'ew-resize'
+        })
+
+        const barsContainerDragEnds = Observable.fromEvent(barsContainerElem, 'dragend')
+        .do((e) => {
+            e.target.style.transition = '0.3s all ease'
+            e.target.style.transform = 'translate3d(0px,0px,0px)'
+            e.target.style.zIndex = 1
+            e.target.style.cursor = 'pointer'
+            setTimeout(() => {
+                e.target.style.transition = '0.4s left ease'
+            }, 300)
+        })
         
-        // const barsMouseDrags = barMouseDowns
-        // .concatMap(contactPoint => {
-        //     return barsContainerMouseMoves
-        //     .takeUntil(barsContainerMouseUps)
-        //     .map(movePoint => {
-        //         return {
-        //             pageX: movePoint.pageX - contactPoint.offsetX
-        //         }
-        //     })
-        // })
-        // .forEach(dragPoint => {
-        //     this.refs.bar.style.transform = `translate3d(${dragPoint.pageX - this.props.width*this.props.orderIndex}px,0px,0px)`
-        // })
+        const barsMouseDrags = Observable.fromEvent(barElem, 'drag')
+
+        const subscription = barMouseDragStart
+        .concatMap(contactPoint => {
+            return barsMouseDrags
+            .do(movePoint => {
+                movePoint.target.style.transform = `translate3d(${movePoint.pageX - contactPoint.pageX}px,0px,0px)`
+            })
+            .takeUntil(barsContainerDragEnds)
+        })
+        .subscribe(x => {})
     }
 
     render() {
@@ -66,7 +92,7 @@ export default class Bar extends Component {
             }
         }
         return (
-            <div className="bar" style={Object.assign({}, styles.root, style, (sorted)?{backgroundColor: '#FF974F'}:null)}>
+            <div ref="bar" draggable="true" className="bar" style={Object.assign({}, styles.root, style, (sorted)?{backgroundColor: '#FF974F'}:null)}>
             </div>
         )
     }

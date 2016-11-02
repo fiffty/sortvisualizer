@@ -2,7 +2,8 @@ import React, {Component, PropTypes} from 'react'
 import Bar from './Bar'
 
 export default class BarChart extends Component {
-        render() {
+
+    render() {
         // Required props
         const {bars} = this.props
         // Optional props
