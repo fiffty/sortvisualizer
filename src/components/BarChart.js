@@ -18,12 +18,15 @@ export default class BarChart extends Component {
                 }
             }).value
 
-        const widthOfBars = (1/bars.length*100).toFixed(2) + '%'
+        const widthOfBars = Math.round(1/bars.length*(parseInt(width) - 40))
 
         const styles = {
             root: {
                 width: '100%',
-                height: '100%'
+                height: '100%',
+                backgroundColor: '#EEE',
+                margin: '0px auto',
+                padding: '20px 20px 0px 20px'
             },
             barsContainer: {
                 width: '100%',

@@ -27,23 +27,7 @@ class Sort extends Component {
         this.addRandom = this.addRandom.bind(this)
     }
 
-    componentDidUpdate() {
-        // if (this.props.sortCompleted && this.state.playing) {
-        //     this.setState({
-        //         playing: false
-        //     })
-        // } else if (this.state.playing) {
-        //     this.autoPlay = setTimeout((i) => {
-        //         this.goToNextStep()
-        //     }, 600)
-        // }
-    }
-
     togglePlay() {
-        // clearTimeout(this.autoPlay)
-        // this.setState({
-        //     playing: !this.state.playing
-        // })
         const action = {
             origin: 'USER',
             request: 'TOGGLE_PLAY'
