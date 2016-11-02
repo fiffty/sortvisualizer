@@ -22,9 +22,14 @@ class BubbleSort extends Component {
   }
 
   componentDidMount() {
-    this.actions$ = Observable.fromEvent(document, 'action').throttle(e => Rx.Observable.interval(400)).map(e => e.detail)
+    this.actions$ = Observable.fromEvent(document, 'action').map(e => e.detail)
+
+    // this.changeOrder$ = this.actions$
+    // .filter(action => action.request === 'STAGE_CHANGE_IN_ORDER')
+    // .subscribe(x => console.log(x.payload))
 
     this.sortHistory$ = this.actions$
+    // .throttle(() => Rx.Observable.interval(400))
     .mergeMap(action => {
       if (!this.state.playing) {
         if (action.request === 'TOGGLE_PLAY') {
@@ -55,6 +60,59 @@ class BubbleSort extends Component {
           nextStep: {targetIndex: 0, type: 'COMPARE'}  
         }
         return acc.concat([nextState])
+      } else if (curr.request === 'DROP_BAR') {
+        const {changed, targetOrderIndex, orderIndex, index} = curr.payload
+        if (changed) {
+          if (targetOrderIndex < orderIndex) {
+            const currentBars = latestState.currentBars
+            .map(bar => {
+              if (bar.orderIndex === orderIndex) {
+                return Object.assign({}, bar, {orderIndex: targetOrderIndex, style: {}, sorted: false})
+              } else if (bar.orderIndex >= targetOrderIndex && bar.orderIndex < orderIndex) {
+                return Object.assign({}, bar, {orderIndex: bar.orderIndex + 1, style: {}, sorted: false})
+              } else {
+                return Object.assign({}, bar, {style: {}, sorted: false})
+              }
+            })
+
+            const nextState = {
+              currentBars,
+              nextStep: {targetIndex: 0, type: 'COMPARE'}
+            }
+            return acc.concat([nextState])
+          } else {
+            const currentBars = latestState.currentBars
+            .map(bar => {
+              if (bar.orderIndex === orderIndex) {
+                return Object.assign({}, bar, {orderIndex: targetOrderIndex, style: {}, sorted: false})
+              } else if (bar.orderIndex <= targetOrderIndex && bar.orderIndex > orderIndex) {
+                return Object.assign({}, bar, {orderIndex: bar.orderIndex - 1, style: {}, sorted: false})
+              } else {
+                return Object.assign({}, bar, {style: {}, sorted: false})
+              }
+            })
+
+            const nextState = {
+              currentBars,
+              nextStep: {targetIndex: 0, type: 'COMPARE'}
+            }
+            return acc.concat([nextState])            
+          }
+        } else {
+          return acc
+        }
+      // } else if (curr.request === 'STAGE_CHANGE_IN_ORDER') {
+      //   const {changed, targetOrderIndex, index} = curr.payload
+
+      //   if (changed) {
+
+      //   } else {
+      //     const nextState = {
+      //       currentBars: latestState.currentBars,
+      //       nextStep: latestState.nex
+      //     }
+      //     return acc.concat
+      //   }
       } else {
         return acc
       }
@@ -94,7 +152,6 @@ function getNextBubbleSortState(sortState) {
   switch (nextStep.type) {
     case 'COMPARE':
       barsToSort.forEach(bar => {bar.style = null})
-      console.log(barA, barB)
 
       if (barB) {
         barA.style = {backgroundColor: '#3F5765'}

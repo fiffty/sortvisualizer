@@ -44,9 +44,11 @@ export default class BarChart extends Component {
                             <Bar 
                                 key={'bar-' + i}
                                 value={bar.value}
+                                index={i}
                                 orderIndex={bar.orderIndex}
                                 label={bar.label}
                                 width={widthOfBars}
+                                parentWidth={parseInt(width)}
                                 height={(bars[i].value/(maxValue - minValue)*100).toFixed(2) + '%'}
                                 style={bar.style}
                                 sorted={bar.sorted} />

@@ -4,12 +4,16 @@ const Observable = Rx.Observable
 
 export default class Bar extends Component {
     componentDidMount() {
+        const {width, parentWidth, index, orderIndex} = this.props
+
         const barsContainerElem = document.getElementById('bars-container')
         const barElem = this.refs.bar
         const boundaries = {
             left: barsContainerElem.getBoundingClientRect().left,
             right: barsContainerElem.getBoundingClientRect().left + barsContainerElem.getBoundingClientRect().width
         }
+        const maxOrderIndex = Math.round(parentWidth/width) - 1
+        let dragDetails
 
         /* --------------------------------------------------
         HACKS FOR HTML5 DRAG & DROP API 
@@ -29,40 +33,81 @@ export default class Bar extends Component {
         END OF HACKS FOR HTML5 DRAG & DROP API 
         -------------------------------------------------- */
 
-        const barMouseDragStart = Observable.fromEvent(barElem, 'dragstart')
+        this.barDragStart$ = Observable.fromEvent(barElem, 'dragstart')
         .do((e) => {
             document.dispatchEvent(new CustomEvent('action',{detail:{request:'PAUSE'}}))
             e.target.style.zIndex = 999
             e.target.style.cursor = 'ew-resize'
         })
 
-        const barsContainerDragEnds = Observable.fromEvent(barsContainerElem, 'dragend')
+        this.barsDragEnd$ = Observable.fromEvent(barsContainerElem, 'dragend')
         .do((e) => {
             e.target.style.transition = '0.3s all ease'
             e.target.style.transform = 'translate3d(0px,0px,0px)'
             e.target.style.zIndex = 1
             e.target.style.cursor = 'pointer'
+
+            let dropDetails
+            if (dragDetails) {
+                dropDetails = Object.assign({}, dragDetails, {changed: dragDetails.orderIndex !== dragDetails.targetOrderIndex})
+            } else {
+                dropDetails = {changed: false}
+            }
+
+
+            document.dispatchEvent(new CustomEvent('action', {detail: {request: 'DROP_BAR', payload: dropDetails}}))
+            dragDetails = null
             setTimeout(() => {
                 e.target.style.transition = '0.4s left ease'
             }, 300)
         })
         
-        const barsMouseDrags = Observable.fromEvent(barElem, 'drag')
+        this.barsDrag$ = Observable.fromEvent(barElem, 'drag')
 
-        const subscription = barMouseDragStart
+        this.movement$ = this.barDragStart$
         .concatMap(contactPoint => {
-            return barsMouseDrags
-            .do(movePoint => {
-                movePoint.target.style.transform = `translate3d(${movePoint.pageX - contactPoint.pageX}px,0px,0px)`
+            return this.barsDrag$ 
+            .map(movePoint => {
+                const movement = movePoint.pageX - contactPoint.pageX
+                movePoint.target.style.transform = `translate3d(${movement}px,0px,0px)`
+                return movement
             })
-            .takeUntil(barsContainerDragEnds)
+            .takeUntil(this.barsDragEnd$)
         })
-        .subscribe(x => {})
+
+        const getOrderIndex = () => {
+            return this.props.orderIndex
+        }
+        const getIndex = () => {
+            return this.props.index
+        }
+
+        this.changeSubscription = this.movement$
+        .scan((acc, curr) => {
+            const delta = Math.round(curr/width)
+            let targetOrderIndex = getOrderIndex() + delta
+            if (targetOrderIndex < 0) {
+                targetOrderIndex = 0
+            } else if (targetOrderIndex > maxOrderIndex) {
+                targetOrderIndex = maxOrderIndex
+            }
+
+            if (targetOrderIndex !== acc.targetOrderIndex) {
+                return {changed: true, targetOrderIndex, orderIndex: getOrderIndex(), index: getIndex()}
+            } else {
+                return {changed: false, targetOrderIndex, orderIndex: getOrderIndex(), index: getIndex()}
+            }
+        }, {changed: false, targetOrderIndex: getOrderIndex(), index: getIndex()})
+        .filter(obj => obj.changed)
+        .subscribe(obj => {
+            dragDetails = obj
+            document.dispatchEvent(new CustomEvent('action', {detail: {request: 'STAGE_CHANGE_IN_ORDER', payload: obj}}))
+        })
     }
 
     render() {
         const {value, orderIndex, label, width, height, style, sorted} = this.props
-
+        
         const styles = {
             root: {
                 width: width - 10,
@@ -100,9 +145,11 @@ export default class Bar extends Component {
 
 Bar.propTypes = {
     value: PropTypes.number.isRequired,
+    index: PropTypes.number,
     orderIndex: PropTypes.number.isRequired,
     label: PropTypes.string,
     width: PropTypes.number,
+    parentWidth: PropTypes.number,
     height: PropTypes.string,
     style: PropTypes.object,
     sorted: PropTypes.bool
