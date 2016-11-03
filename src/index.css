@@ -1,18 +1,67 @@
 body {
   margin: 0;
   padding: 0;
-  font-family: sans-serif;
+  font-family: 'Roboto', sans-serif;
+  background-color: #EEE;
 }
 
 * {
   box-sizing: border-box;
 }
 
+h1 {
+  text-align: center;
+  font-size: 2.5em;
+  margin-top: 40px;
+}
+
+.sort-visualizer {
+  width: 100%;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+}
+
 .barchart-container {
   width: 100%;
-  background-color: #EEE;
+  position: relative;
+}
+
+.control-bar {
+  width: 100%;
+  text-align: center;
+  padding: 15px 0;
+  background-color: #222;
+}
+
+.control-bar__btn {
+  display: inline-block;
+  margin: 0 20px;
+  color: #CCC;
+  cursor: pointer;
+}
+.control-bar__btn:hover {
+  color: #FFF;
+}
+.control-bar__btn::nth-child(2) {
+  transform: scale(1.5);
+}
+.control-bar__btn::nth-child(2):hover {
+  transform: scale(2);
+}
+
+.add-bar__btn {
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  right: 50%;
+  margin-right: -370px;
 }
 
 .bar {
   cursor: pointer;
+}
+
+.bar__value, .bar__label {
+  display: none;
 }

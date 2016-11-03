@@ -4,14 +4,10 @@ const Observable = Rx.Observable
 
 export default class Bar extends Component {
     componentDidMount() {
-        const {width, parentWidth, index, orderIndex} = this.props
+        const {width, parentWidth} = this.props
 
         const barsContainerElem = document.getElementById('bars-container')
         const barElem = this.refs.bar
-        const boundaries = {
-            left: barsContainerElem.getBoundingClientRect().left,
-            right: barsContainerElem.getBoundingClientRect().left + barsContainerElem.getBoundingClientRect().width
-        }
         const maxOrderIndex = Math.round(parentWidth/width) - 1
         let dragDetails
 
@@ -116,9 +112,8 @@ export default class Bar extends Component {
                 position: 'absolute',
                 bottom: 0,
                 left: width * orderIndex,
-                backgroundColor: '#CCC',
-                border: '1px solid #AAA',
-                color: '#FFF',
+                backgroundColor: '#41dbbf',
+                opacity: 0.6,
                 transition: '0.4s left ease'
             },
             label: {
@@ -138,6 +133,8 @@ export default class Bar extends Component {
         }
         return (
             <div ref="bar" draggable="true" className="bar" style={Object.assign({}, styles.root, style, (sorted)?{backgroundColor: '#FF974F'}:null)}>
+                <div className="bar__value">{value}</div>
+                <div className="bar__label">{label}</div>
             </div>
         )
     }

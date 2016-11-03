@@ -19,7 +19,7 @@ export default class BarChart extends Component {
                 }
             }).value
 
-        const widthOfBars = Math.round(1/bars.length*(parseInt(width) - 40))
+        const widthOfBars = Math.round(1/bars.length*(parseInt(width, 0) - 40))
 
         const styles = {
             root: {
@@ -47,7 +47,7 @@ export default class BarChart extends Component {
                                 orderIndex={bar.orderIndex}
                                 label={bar.label}
                                 width={widthOfBars}
-                                parentWidth={parseInt(width)}
+                                parentWidth={parseInt(width, 0)}
                                 height={(bars[i].value/(maxValue - minValue)*100).toFixed(2) + '%'}
                                 style={bar.style}
                                 sorted={bar.sorted} />

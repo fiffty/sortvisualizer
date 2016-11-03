@@ -1,5 +1,4 @@
 import React, {Component} from 'react'
-import BarChart from './BarChart'
 import SortVisualizer from './SortVisualizer'
 const Rx = require('rxjs/Rx')
 const Observable = Rx.Observable
@@ -12,7 +11,7 @@ class StreamProvider extends Component {
       sortState: this.props.initialSortState,
       playing: false,
       width: '600px',
-      height: '400px'   
+      height: '300px'   
     }
   }
 
@@ -53,7 +52,7 @@ class StreamProvider extends Component {
         }
         return acc.concat([nextState])
       } else if (curr.request === 'DROP_BAR') {
-        const {changed, targetOrderIndex, orderIndex, index} = curr.payload
+        const {changed, targetOrderIndex, orderIndex} = curr.payload
         if (changed) {
           if (targetOrderIndex < orderIndex) {
             const currentBars = latestState.currentBars
@@ -107,6 +106,8 @@ class StreamProvider extends Component {
 
   render() {
     return (
+      <div>
+        <h1>BUBBLE SORT VISUALIZER</h1>
         <SortVisualizer 
           playing={this.state.playing}
           sortCompleted={this.state.sortState.sortCompleted}
@@ -115,6 +116,7 @@ class StreamProvider extends Component {
           width={this.state.width}
           height={this.state.height}
           />
+      </div>
     )
   }
 }

@@ -58,11 +58,13 @@ class SortVisualizer extends Component {
                         bars={sortState.currentBars}
                         width={width}
                         height={height}  />
+                    <i className="fa fa-plus-square-o add-bar__btn" onClick={this.addRandom}></i>
                 </div>
-                <button onClick={this.goToPrevStep}>Prev Step</button>
-                <button onClick={this.goToNextStep}>Next Step</button>
-                <button onClick={this.togglePlay}>{(playing) ? 'Pause' : 'Play'}</button>
-                <button onClick={this.addRandom}>Add a Bar</button>
+                <div className="control-bar">
+                    <i className="fa fa-backward control-bar__btn" onClick={this.goToPrevStep}></i>
+                    <i className={playing? 'fa fa-pause control-bar__btn' : 'fa fa-play control-bar__btn'} onClick={this.togglePlay}></i>
+                    <i className="fa fa-forward control-bar__btn" onClick={this.goToNextStep}></i>
+                </div>
             </div>
         );
     }

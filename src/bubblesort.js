@@ -1,5 +1,5 @@
 export const initialSortState = {
-      currentBars: new Array(6).fill().map((x,i) => new Bar('Bar ' + i, randomNum(10,100), i)),
+      currentBars: new Array(8).fill().map((x,i) => new Bar('Bar ' + i, randomNum(10,100), i)),
       nextStep: {targetIndex: 0, type: 'COMPARE'},
     }
 
