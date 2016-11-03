@@ -107,7 +107,7 @@ class StreamProvider extends Component {
   render() {
     return (
       <div>
-        <h1>BUBBLE SORT VISUALIZER</h1>
+        <h1><span className="sort-type">BUBBLE</span> SORT VISUALIZER</h1>
         <SortVisualizer 
           playing={this.state.playing}
           sortCompleted={this.state.sortState.sortCompleted}

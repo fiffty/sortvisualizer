@@ -16,8 +16,8 @@ export function getNextBubbleSortState(sortState) {
       barsToSort.forEach(bar => {bar.style = null})
 
       if (barB) {
-        barA.style = {backgroundColor: '#3F5765'}
-        barB.style = {backgroundColor: '#BDD4DE'}
+        barA.style = {backgroundColor: '#ff8b3b'}
+        barB.style = {backgroundColor: '#ffd1b1'}
         if (barA.value > barB.value) {
           return Object.assign({}, sortState, {
             currentBars: nextBars,

@@ -12,7 +12,11 @@ body {
 h1 {
   text-align: center;
   font-size: 2.5em;
-  margin-top: 40px;
+  font-weight: 100;
+}
+
+.sort-type {
+  font-weight: 900;
 }
 
 .sort-visualizer {
@@ -20,6 +24,19 @@ h1 {
   position: absolute;
   left: 0;
   bottom: 0;
+}
+
+.sort-steps {
+  /*position: absolute;*/
+  background-color: #fff;
+  /*top: 0;*/
+  /*left: 50%;*/
+  /*transform: translateX(-50%);*/
+  padding: 10px;
+}
+.sort-steps p {
+  margin: 7px;
+  font-family: monospace;
 }
 
 .barchart-container {
@@ -53,9 +70,9 @@ h1 {
 .add-bar__btn {
   cursor: pointer;
   position: absolute;
-  top: 50%;
+  bottom: 30px;
   right: 50%;
-  margin-right: -370px;
+  margin-right: -320px;
 }
 
 .bar {

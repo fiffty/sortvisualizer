@@ -97,7 +97,7 @@ export default class Bar extends Component {
         .filter(obj => obj.changed)
         .subscribe(obj => {
             dragDetails = obj
-            document.dispatchEvent(new CustomEvent('action', {detail: {request: 'STAGE_CHANGE_IN_ORDER', payload: obj}}))
+            document.dispatchEvent(new CustomEvent('action', {detail: {request: 'DRAG_BAR', payload: obj}}))
         })
     }
 
@@ -131,8 +131,9 @@ export default class Bar extends Component {
                 padding: 5
             }
         }
+        
         return (
-            <div ref="bar" draggable="true" className="bar" style={Object.assign({}, styles.root, style, (sorted)?{backgroundColor: '#FF974F'}:null)}>
+            <div ref="bar" draggable="true" className="bar" style={Object.assign({}, styles.root, style, (sorted)?{backgroundColor: '#BDD4DE'}:null)}>
                 <div className="bar__value">{value}</div>
                 <div className="bar__label">{label}</div>
             </div>
