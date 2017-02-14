@@ -19,24 +19,32 @@ h1 {
   font-weight: 900;
 }
 
+.data-options {
+  font-weight: 100;
+  text-align: center;
+}
+
+.data-options > span {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 10px;
+  color: #fff;
+  cursor: pointer;
+}
+
+.random-btn {
+  background-color: #888;
+}
+
+.fetch-btn {
+  background-color: #00bcd4;
+}
+
 .sort-visualizer {
   width: 100%;
   position: absolute;
   left: 0;
   bottom: 0;
-}
-
-.sort-steps {
-  /*position: absolute;*/
-  background-color: #fff;
-  /*top: 0;*/
-  /*left: 50%;*/
-  /*transform: translateX(-50%);*/
-  padding: 10px;
-}
-.sort-steps p {
-  margin: 7px;
-  font-family: monospace;
 }
 
 .barchart-container {
@@ -73,12 +81,44 @@ h1 {
   bottom: 30px;
   right: 50%;
   margin-right: -320px;
+  color: #666;
 }
 
 .bar {
   cursor: pointer;
+  z-index: 1;
 }
 
-.bar__value, .bar__label {
-  display: none;
+.bar__label {
+  min-width: 200px;
+  text-align: center;
+  position: absolute;
+  transition: all 0.5s ease;
+  left: 50%;
+  transform: translateX(-50%);
+  top:0;
+  color: rgba(0,0,0,0);
+  z-index: -1;
+}
+.bar:hover .bar__label {
+  color: rgba(0,0,0,1);
+  top: -25px;
+}
+
+.bar__value {
+  min-width: 200px;
+  text-align: center;
+  position: absolute;
+  top: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #666;
+  font-weight: 100;
+  transition: all 0.5s ease;
+  z-index: -1;
+}
+.bar:hover .bar__value {
+  color: #000;
+  font-weight: 400;
+  top: 5px;
 }

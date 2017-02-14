@@ -142,7 +142,7 @@ export default class Bar extends Component {
 }
 
 Bar.propTypes = {
-    value: PropTypes.number.isRequired,
+    value: PropTypes.string.isRequired,
     index: PropTypes.number,
     orderIndex: PropTypes.number.isRequired,
     label: PropTypes.string,
