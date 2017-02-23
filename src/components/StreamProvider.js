@@ -31,26 +31,22 @@ class StreamProvider extends Component {
 
     this.actions$ = Observable.fromEvent(document, 'action').map(e => e.detail)
 
-    this.sortHistory$ = this.actions$
-    .mergeMap(action => {
-      if (!this.state.playing) {
-        if (action.request === 'TOGGLE_PLAY') {
-          return Observable.interval(500)
-            .startWith(1)
-            .takeUntil(this.actions$)
-            .takeWhile(x => !this.state.sortState.sortCompleted)
-            .map(x => {return {request: 'GO_TO_NEXT_STEP'}})
-            .do(x => {if (!this.state.playing) {this.setState({playing: true})}})
-            .finally(() => {this.setState({playing: false})})
-        } else {
-          return Observable.of(action)
-        }
+    const handleAutoPlay = (action) => {
+      if (!this.state.playing && action.request === 'TOGGLE_PLAY') {
+        return Observable.interval(500)
+          .startWith(1)
+          .takeUntil(this.actions$)
+          .takeWhile(x => !this.state.sortState.sortCompleted)
+          .map(x => {return {request: 'GO_TO_NEXT_STEP'}})
+          .do(x => {if (!this.state.playing) {this.setState({playing: true})}})
+          .finally(() => {this.setState({playing: false})})
       } else {
         return Observable.of(action)
       }
-    })
-    .mergeMap(action => {
-      if (action.request === 'FETCH_WEATHER') {
+    }
+
+    const handleFetchWeatherData = (action) => {
+        if (action.request === 'FETCH_WEATHER') {
         return Observable.fromPromise(fetchJsonp('http://api.openweathermap.org/data/2.5/forecast/daily?q=Toronto&units=metric&cnt=7&appid=8b21002249e5a28a335414b79219a70c'))
         .mergeMap(res => {
           return Observable.fromPromise(res.json())
@@ -68,7 +64,13 @@ class StreamProvider extends Component {
             nextStep: {targetIndex: 0, type: 'COMPARE'}
           }
         })
-      } else if (action.request === 'FETCH_RANDOM') {
+      } else {
+        return Observable.of(action)
+      }    
+    }
+
+    const handleFetchRandomData = (action) => {
+      if (action.request === 'FETCH_RANDOM') {
         return Observable.of({
           currentBars: new Array(8).fill().map((x,i) => new Bar('Bar ' + i, String(randomNum(10,100)), i)),
           nextStep: {targetIndex: 0, type: 'COMPARE'},
@@ -76,68 +78,66 @@ class StreamProvider extends Component {
       } else {
         return Observable.of(action)
       }
-    })
+    }
+
+    this.sortHistory$ = this.actions$
+    .mergeMap(handleAutoPlay)
+    .mergeMap(handleFetchWeatherData)
+    .mergeMap(handleFetchRandomData)
     .scan((acc, curr) => {
       const latestState = acc[acc.length - 1]
-      if (curr.currentBars) {
-        return acc.concat(curr)
-      }
+      let nextState = []
 
-      if (curr.request === 'GO_TO_NEXT_STEP') {
-        return latestState.sortCompleted ? acc : acc.concat(algorithm(latestState))
+      if (curr.currentBars) {
+        nextState = [curr]
+      } else if (curr.request === 'GO_TO_NEXT_STEP') {
+        if (!latestState.sortCompleted) nextState = [algorithm(latestState)]
       } else if (curr.request === 'GO_TO_PREV_STEP') {
-        return (acc.length <= 1) ? acc : acc.slice(0, acc.length -1)
+        return acc.length <= 1 ? acc : acc.slice(0, acc.length -1)
       } else if (curr.request === 'ADD_RANDOM') {
         const newBar = new Bar('Bar ' + latestState.currentBars.length, randomNum(10,100), latestState.currentBars.length)
-        const nextState = {
+        nextState = [{
           currentBars: latestState.currentBars.map(bar => Object.assign({},bar,{sorted:false})).concat(newBar),
           nextStep: {targetIndex: 0, type: 'COMPARE'}  
-        }
-        return acc.concat([nextState])
-      } else if (curr.request === 'DROP_BAR') {
-        const {changed, targetOrderIndex, orderIndex} = curr.payload
-        if (changed) {
-          if (targetOrderIndex < orderIndex) {
-            const currentBars = latestState.currentBars
-            .map(bar => {
-              if (bar.orderIndex === orderIndex) {
-                return Object.assign({}, bar, {orderIndex: targetOrderIndex, style: {}, sorted: false})
-              } else if (bar.orderIndex >= targetOrderIndex && bar.orderIndex < orderIndex) {
-                return Object.assign({}, bar, {orderIndex: bar.orderIndex + 1, style: {}, sorted: false})
-              } else {
-                return Object.assign({}, bar, {style: {}, sorted: false})
-              }
-            })
-
-            const nextState = {
-              currentBars,
-              nextStep: {targetIndex: 0, type: 'COMPARE'}
+        }]       
+      } else if (curr.request === 'DROP_BAR' && curr.payload.changed) {
+        const {targetOrderIndex, orderIndex} = curr.payload
+        if (targetOrderIndex < orderIndex) {
+          const currentBars = latestState.currentBars
+          .map(bar => {
+            if (bar.orderIndex === orderIndex) {
+              return Object.assign({}, bar, {orderIndex: targetOrderIndex, style: {}, sorted: false})
+            } else if (bar.orderIndex >= targetOrderIndex && bar.orderIndex < orderIndex) {
+              return Object.assign({}, bar, {orderIndex: bar.orderIndex + 1, style: {}, sorted: false})
+            } else {
+              return Object.assign({}, bar, {style: {}, sorted: false})
             }
-            return acc.concat([nextState])
-          } else {
-            const currentBars = latestState.currentBars
-            .map(bar => {
-              if (bar.orderIndex === orderIndex) {
-                return Object.assign({}, bar, {orderIndex: targetOrderIndex, style: {}, sorted: false})
-              } else if (bar.orderIndex <= targetOrderIndex && bar.orderIndex > orderIndex) {
-                return Object.assign({}, bar, {orderIndex: bar.orderIndex - 1, style: {}, sorted: false})
-              } else {
-                return Object.assign({}, bar, {style: {}, sorted: false})
-              }
-            })
+          })
 
-            const nextState = {
-              currentBars,
-              nextStep: {targetIndex: 0, type: 'COMPARE'}
-            }
-            return acc.concat([nextState])            
-          }
+          nextState = [{
+            currentBars,
+            nextStep: {targetIndex: 0, type: 'COMPARE'}
+          }]
         } else {
-          return acc
+          const currentBars = latestState.currentBars
+          .map(bar => {
+            if (bar.orderIndex === orderIndex) {
+              return Object.assign({}, bar, {orderIndex: targetOrderIndex, style: {}, sorted: false})
+            } else if (bar.orderIndex <= targetOrderIndex && bar.orderIndex > orderIndex) {
+              return Object.assign({}, bar, {orderIndex: bar.orderIndex - 1, style: {}, sorted: false})
+            } else {
+              return Object.assign({}, bar, {style: {}, sorted: false})
+            }
+          })
+
+          nextState = [{
+            currentBars,
+            nextStep: {targetIndex: 0, type: 'COMPARE'}
+          }]
         }
-      } else {
-        return acc
       }
+
+      return acc.concat(nextState)
     }, [this.state.sortState])
 
     this.sortHistory$.subscribe(x => {
