@@ -1,140 +1,134 @@
-// edit this later
+export const initialSortState = {
+  currentBars: new Array(8).fill().map((x,i) => new Bar('Bar ' + i, String(randomNum(10,100)), i)), nextStep: {targetIndex: 0, type: 'COMPARE'}
+}
 
-class SelectSort extends Component {
-  render() {
-    function goToNextStep() {
-        const {barsHistory, stepHistory, sortCompleted} = this.state
-        if (sortCompleted) return
-        const currentStep = stepHistory[stepHistory.length - 1]
-        const aIndex = currentStep.aIndex
-        const bIndex = currentStep.bIndex
+export function getNextSelectSortState(sortState) {
+  const {currentBars, nextStep} = sortState
+  const nextBars = deepClone(currentBars)
+  const barsToSort = nextBars.filter(bar => !bar.sorted)
+  const numOfSorted = nextBars.length - barsToSort.length
+  if (!nextStep.aIndex) nextStep.aIndex = 0
+  if (!nextStep.bIndex) nextStep.bIndex = 1
+  const {aIndex, bIndex} = nextStep
 
-        const newBars = deepClone(barsHistory[barsHistory.length - 1])
-        const barsToSort = newBars
-        const numOfSorted = barsToSort.filter((bar) => bar.sorted).length
-
-        let aBar, bBar, aBarIsLastBar, bBarIsLastBar
-        for (let i = 0; i < barsToSort.length; i++) {
-            if (barsToSort[i].orderIndex === aIndex) {
-              aBar = barsToSort[i]
-              if (aBar.orderIndex === barsToSort.length - 1) {
-                aBarIsLastBar = true
-              }
-            } else if (barsToSort[i].orderIndex === bIndex) {
-              bBar = barsToSort[i]
-              if (bBar.orderIndex === barsToSort.length - 1) {
-                bBarIsLastBar = true
-              }              
-            }
+  let aBar, bBar, aBarIsLastBar, bBarIsLastBar
+  for (let i = 0; i < barsToSort.length; i++) {
+      if (barsToSort[i].orderIndex === aIndex) {
+        aBar = barsToSort[i]
+        if (aBar.orderIndex === nextBars.length - 1) {
+          aBarIsLastBar = true
         }
-
-        switch (currentStep.type) {
-          case 'SWITCH':
-            for (let bar of barsToSort) {
-              bar.style = null
-            }
-            aBar.sorted = true
-            if (aBar.orderIndex !== numOfSorted - 1) {
-              for (let i = 0; i < barsToSort.length; i++) {
-                if (barsToSort[i].orderIndex === numOfSorted) {
-                  barsToSort[i].orderIndex = aBar.orderIndex
-                }
-              }
-              aBar.orderIndex = numOfSorted
-            }
-
-            if (numOfSorted === barsToSort.length - 1) {
-              this.setState({
-                barsHistory: barsHistory.concat([newBars]),
-                stepHistory: stepHistory.concat(Object.assign({}, currentStep, {
-                  type: 'FINISH',
-                })),
-                sortCompleted: true
-              })
-            } else {
-              this.setState({
-                barsHistory: barsHistory.concat([newBars]),
-                stepHistory: stepHistory.concat(Object.assign({}, currentStep, {
-                  type: 'SELECT_AS_MIN',
-                  aIndex: numOfSorted + 1
-                }))
-              })  
-            }
-            break
-          case 'COMPARE':
-            for (let bar of barsToSort) {
-              bar.style = null
-            }
-            aBar.style = {backgroundColor: '#3F5765'}
-            bBar.style = {backgroundColor: '#BDD4DE'}
-
-            if (aBar.value > bBar.value) {
-              this.setState({
-                barsHistory: barsHistory.concat([newBars]),
-                stepHistory: stepHistory.concat(Object.assign({}, currentStep, {
-                  type: 'SELECT_AS_MIN',
-                  aIndex: currentStep.bIndex
-                }))
-              })               
-            } else if (bBarIsLastBar) {
-              this.setState({
-                barsHistory: barsHistory.concat([newBars]),
-                stepHistory: stepHistory.concat(Object.assign({}, currentStep, {
-                  type: 'SWITCH',
-                  aIndex: currentStep.aIndex
-                }))
-              })
-            } else {
-              this.setState({
-                barsHistory: barsHistory.concat([newBars]),
-                stepHistory: stepHistory.concat(Object.assign({}, currentStep, {
-                  type: 'COMPARE',
-                  bIndex: currentStep.bIndex + 1
-                }))
-              }) 
-            }
-            break
-          case 'SELECT_AS_MIN':
-            for (let bar of barsToSort) {
-              bar.style = null
-            }
-            aBar.style = {backgroundColor: '#3F5765'}
-
-            if (aBarIsLastBar) {
-              this.setState({
-                barsHistory: barsHistory.concat([newBars]),
-                stepHistory: stepHistory.concat(Object.assign({}, currentStep, {
-                  type: 'SWITCH',
-                  aIndex: currentStep.aIndex
-                }))     
-              })         
-            } else {
-              this.setState({
-                barsHistory: barsHistory.concat([newBars]),
-                stepHistory: stepHistory.concat(Object.assign({}, currentStep, {
-                  type: 'COMPARE',
-                  bIndex: currentStep.aIndex + 1
-                }))
-              }) 
-            }
-            break
-          default:
-            break
-        }
-    }
-
-    const nextStep = {
-      aIndex: 0,
-      type: 'SELECT_AS_MIN'      
-    }
-
-    return (
-      <Sort 
-        initialStep={nextStep}
-        width={'600px'}
-        height={'400px'}
-        goToNextStep={goToNextStep}
-        />
-    )
+      } else if (barsToSort[i].orderIndex === bIndex) {
+        bBar = barsToSort[i]
+        if (bBar.orderIndex === nextBars.length - 1) {
+          bBarIsLastBar = true
+        }              
+      }
   }
+
+  switch (nextStep.type) {
+    case 'SWITCH':
+      for (let bar of barsToSort) {
+        bar.style = null
+      }
+      aBar.sorted = true
+      if (aBar.orderIndex !== numOfSorted - 1) {
+        for (let i = 0; i < barsToSort.length; i++) {
+          if (barsToSort[i].orderIndex === numOfSorted) {
+            barsToSort[i].orderIndex = aBar.orderIndex
+          }
+        }
+        aBar.orderIndex = numOfSorted
+      }
+
+      if (numOfSorted === nextBars.length - 1) {
+        return Object.assign({}, sortState, {
+          currentBars: nextBars,
+          nextStep: {
+            type: 'FINISH'
+          },
+          sortCompleted: true
+        })
+      } else {
+        return Object.assign({}, sortState, {
+          currentBars: nextBars,
+          nextStep: Object.assign({}, nextStep, {
+            type: 'SELECT_AS_MIN',
+            aIndex: numOfSorted + 1
+          })
+        })  
+      }
+    case 'COMPARE':
+      for (let bar of barsToSort) {
+        bar.style = null
+      }
+      aBar.style = {backgroundColor: '#3F5765'}
+      bBar.style = {backgroundColor: '#BDD4DE'}
+
+      if (aBar.value > bBar.value) {
+        return Object.assign({}, sortState, {
+          currentBars: nextBars,
+          nextStep: Object.assign({}, nextStep, {
+            type: 'SELECT_AS_MIN',
+            aIndex: nextStep.bIndex
+          })
+        })              
+      } else if (bBarIsLastBar) {
+        return Object.assign({}, sortState, {
+          currentBars: nextBars,
+          nextStep: Object.assign({}, nextStep, {
+            type: 'SWITCH',
+            aIndex: nextStep.aIndex
+          })
+        })
+      } else {
+        return Object.assign({}, sortState, {
+          currentBars: nextBars,
+          nextStep: Object.assign({}, nextStep, {
+            type: 'COMPARE',
+            bIndex: nextStep.bIndex + 1
+          })
+        }) 
+      }
+    case 'SELECT_AS_MIN':
+      for (let bar of barsToSort) {
+        bar.style = null
+      }
+      aBar.style = {backgroundColor: '#3F5765'}
+
+      if (aBarIsLastBar) {
+        return Object.assign({}, sortState, {
+          currentBars: nextBars,
+          nextStep: Object.assign({}, nextStep, {
+            type: 'SWITCH',
+            aIndex: nextStep.aIndex
+          })    
+        })        
+      } else {
+        return Object.assign({}, sortState, {
+          currentBars: nextBars,
+          nextStep: Object.assign({}, nextStep, {
+            type: 'COMPARE',
+            bIndex: nextStep.aIndex + 1
+          })
+        })
+      }
+    default:
+      break
+  }
+}
+
+function randomNum(min, max) {
+  return Math.floor(Math.random() * (max - min)) + min
+}
+
+function Bar(label, value, orderIndex) {
+  this.label = label
+  this.value = value
+  this.orderIndex = orderIndex
+}
+
+function deepClone(obj) {
+  const json = JSON.stringify(obj)
+  return JSON.parse(json)
 }

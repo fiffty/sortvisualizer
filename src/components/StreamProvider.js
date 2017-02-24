@@ -3,6 +3,8 @@ import SortVisualizer from './SortVisualizer'
 const Rx = require('rxjs/Rx')
 const Observable = Rx.Observable
 import fetchJsonp from 'fetch-jsonp'
+import {getNextBubbleSortState} from './../bubblesort'
+import {getNextSelectSortState} from './../selectsort'
 
 // fetchJsonp('http://api.openweathermap.org/data/2.5/forecast/daily?q=Toronto&units=metric&cnt=7&appid=8b21002249e5a28a335414b79219a70c')
 //   .then(res => {
@@ -19,16 +21,30 @@ class StreamProvider extends Component {
     super(props);
 
     this.state = {
-      sortState: this.props.initialSortState,
+      algorithm: 'BUBBLE',
+      algoSelectorActive: false,
+      sortState: {
+        currentBars: new Array(8).fill().map((x,i) => new Bar('Bar ' + i, String(randomNum(10,100)), i)),
+        nextStep: {targetIndex: 0, type: 'COMPARE'},
+      },
       playing: false,
       width: '600px',
       height: '300px'   
     }
+
+    this.toggleAlgoSelector = this.toggleAlgoSelector.bind(this)
+    this.selectAlgo = this.selectAlgo.bind(this)
+  }
+
+  getNextState(latestState) {
+    if (this.state.algorithm === 'BUBBLE') {
+      return getNextBubbleSortState(latestState)
+    } else if (this.state.algorithm === 'SELECT') {
+      return getNextSelectSortState(latestState)
+    }
   }
 
   componentDidMount() {
-    const algorithm = this.props.algorithm
-
     this.actions$ = Observable.fromEvent(document, 'action').map(e => e.detail)
 
     const handleAutoPlay = (action) => {
@@ -88,10 +104,12 @@ class StreamProvider extends Component {
       const latestState = acc[acc.length - 1]
       let nextState = []
 
-      if (curr.currentBars) {
+      if (curr.request === 'RESET') {
+        return [curr.nextState]
+      } else if (curr.currentBars) {
         nextState = [curr]
       } else if (curr.request === 'GO_TO_NEXT_STEP') {
-        if (!latestState.sortCompleted) nextState = [algorithm(latestState)]
+        if (!latestState.sortCompleted) nextState = [this.getNextState(latestState)]
       } else if (curr.request === 'GO_TO_PREV_STEP') {
         return acc.length <= 1 ? acc : acc.slice(0, acc.length -1)
       } else if (curr.request === 'ADD_RANDOM') {
@@ -151,10 +169,41 @@ class StreamProvider extends Component {
     document.dispatchEvent(new CustomEvent('action', {detail: {request: 'FETCH_WEATHER'}}))
   }
 
+  toggleAlgoSelector() {
+    this.setState({
+      algoSelectorActive: !this.state.algoSelectorActive
+    })
+  }
+
+  selectAlgo(algorithm) {
+    this.setState({
+      algorithm,
+      algoSelectorActive: false,
+      playing: false
+    })
+    const action = {
+        origin: 'USER',
+        request: 'RESET',
+        nextState: {
+          currentBars: new Array(8).fill().map((x,i) => new Bar('Bar ' + i, String(randomNum(10,100)), i)),
+          nextStep: {targetIndex: 0, type: 'COMPARE'},
+        }
+    }
+    document.dispatchEvent(new CustomEvent('action', {detail: action})) 
+  }
+
   render() {
     return (
       <div>
-        <h1><span className="sort-type">BUBBLE</span> SORT VISUALIZER</h1>
+        <div className="title">
+          <h1><span className="sort-type" onClick={this.toggleAlgoSelector}>{this.state.algorithm}</span> SORT VISUALIZER</h1>
+          {this.state.algoSelectorActive? 
+          <div className="sort-type__select">
+            <div className="sort-type__option" onClick={() => {this.selectAlgo('BUBBLE')}}>bubble sort</div>
+            <div className="sort-type__option" onClick={() => {this.selectAlgo('SELECT')}}>select sort</div>
+          </div>
+          : null}        
+        </div>
         <p className="data-options">
           USE
           <span onClick={() => {document.dispatchEvent(new CustomEvent('action', {detail: {request: 'FETCH_RANDOM'}}))}} className="random-btn"> RANDOM DATA</span>
