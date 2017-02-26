@@ -6,33 +6,19 @@ import fetchJsonp from 'fetch-jsonp'
 import {getNextBubbleSortState} from './../bubblesort'
 import {getNextSelectSortState} from './../selectsort'
 
-// fetchJsonp('http://api.openweathermap.org/data/2.5/forecast/daily?q=Toronto&units=metric&cnt=7&appid=8b21002249e5a28a335414b79219a70c')
-//   .then(res => {
-//     res.json().then(data => {
-//       const weeklyWeather = data.list
-//       weeklyWeather.forEach(day => {
-//         console.log(new Date(day.dt * 1000))
-//       })
-//     })
-//   })
-
 class StreamProvider extends Component {
   constructor(props) {
-    super(props);
+    super(props)
 
     this.state = {
       algorithm: 'BUBBLE',
-      algoSelectorActive: false,
       sortState: {
         currentBars: new Array(8).fill().map((x,i) => new Bar('Bar ' + i, String(randomNum(10,100)), i)),
         nextStep: {targetIndex: 0, type: 'COMPARE'},
       },
-      playing: false,
-      width: '600px',
-      height: '300px'   
+      playing: false, 
     }
 
-    this.toggleAlgoSelector = this.toggleAlgoSelector.bind(this)
     this.selectAlgo = this.selectAlgo.bind(this)
   }
 
@@ -113,7 +99,7 @@ class StreamProvider extends Component {
       } else if (curr.request === 'GO_TO_PREV_STEP') {
         return acc.length <= 1 ? acc : acc.slice(0, acc.length -1)
       } else if (curr.request === 'ADD_RANDOM') {
-        const newBar = new Bar('Bar ' + latestState.currentBars.length, randomNum(10,100), latestState.currentBars.length)
+        const newBar = new Bar('Bar ' + latestState.currentBars.length, String(randomNum(10,100)), latestState.currentBars.length)
         nextState = [{
           currentBars: latestState.currentBars.map(bar => Object.assign({},bar,{sorted:false})).concat(newBar),
           nextStep: {targetIndex: 0, type: 'COMPARE'}  
@@ -165,16 +151,6 @@ class StreamProvider extends Component {
     })
   }
 
-  fetchWeather() {
-    document.dispatchEvent(new CustomEvent('action', {detail: {request: 'FETCH_WEATHER'}}))
-  }
-
-  toggleAlgoSelector() {
-    this.setState({
-      algoSelectorActive: !this.state.algoSelectorActive
-    })
-  }
-
   selectAlgo(algorithm) {
     this.setState({
       algorithm,
@@ -194,31 +170,15 @@ class StreamProvider extends Component {
 
   render() {
     return (
-      <div>
-        <div className="title">
-          <h1><span className="sort-type" onClick={this.toggleAlgoSelector}>{this.state.algorithm}</span> SORT VISUALIZER</h1>
-          {this.state.algoSelectorActive? 
-          <div className="sort-type__select">
-            <div className="sort-type__option" onClick={() => {this.selectAlgo('BUBBLE')}}>bubble sort</div>
-            <div className="sort-type__option" onClick={() => {this.selectAlgo('SELECT')}}>select sort</div>
-          </div>
-          : null}        
-        </div>
-        <p className="data-options">
-          USE
-          <span onClick={() => {document.dispatchEvent(new CustomEvent('action', {detail: {request: 'FETCH_RANDOM'}}))}} className="random-btn"> RANDOM DATA</span>
-          <span onClick={() => {document.dispatchEvent(new CustomEvent('action', {detail: {request: 'FETCH_WEATHER'}}))}} className="fetch-btn"> TORONTO WEATHER DATA</span>
-        </p>
-        
-        <SortVisualizer 
-          playing={this.state.playing}
-          sortCompleted={this.state.sortState.sortCompleted}
-          sortState={this.state.sortState}
-          additionalStates={{swapped: false}}
-          width={this.state.width}
-          height={this.state.height}
-          />
-      </div>
+      <SortVisualizer 
+        algorithm={this.state.algorithm}
+        selectAlgo={this.selectAlgo}
+        getRandomData={this.getRandomData}
+        getWeatherData={this.getWeatherData}
+        playing={this.state.playing}
+        sortCompleted={this.state.sortState.sortCompleted}
+        sortState={this.state.sortState}
+        />
     )
   }
 }

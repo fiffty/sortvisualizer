@@ -36,23 +36,25 @@ export default class BarChart extends Component {
         }
 
         return (
-            <div style={Object.assign({}, styles.root, {width, height})}>
-                <div id="bars-container" style={styles.barsContainer}>
-                    {bars.map((bar, i) => {
-                        return (
-                            <Bar 
-                                key={'bar-' + i}
-                                value={bar.value}
-                                index={i}
-                                orderIndex={bar.orderIndex}
-                                label={bar.label}
-                                width={widthOfBars}
-                                parentWidth={parseInt(width, 0)}
-                                height={(parseInt(bars[i].value,0)/(maxValue - minValue)*100).toFixed(2) + '%'}
-                                style={bar.style}
-                                sorted={bar.sorted} />
-                        )
-                    })}
+            <div className="barchart-container">
+                <div style={Object.assign({}, styles.root, {width, height})}>
+                    <div id="bars-container" style={styles.barsContainer}>
+                        {bars.map((bar, i) => {
+                            return (
+                                <Bar 
+                                    key={'bar-' + i}
+                                    value={bar.value}
+                                    index={i}
+                                    orderIndex={bar.orderIndex}
+                                    label={bar.label}
+                                    width={widthOfBars}
+                                    parentWidth={parseInt(width, 0)}
+                                    height={(parseInt(bars[i].value,0)/(maxValue - minValue)*100).toFixed(2) + '%'}
+                                    style={bar.style}
+                                    sorted={bar.sorted} />
+                            )
+                        })}
+                    </div>
                 </div>
             </div>
         )

@@ -1,30 +1,36 @@
 import React, {Component, PropTypes} from 'react'
 import BarChart from './BarChart'
+import AlgoSelector from './AlgoSelector'
+import ControlBar from './ControlBar'
 
 class SortVisualizer extends Component {
     constructor(props) {
         super(props)
-        this.state = {
-            playing: false
-        }
 
-        this.goToNextStep = () => {
-            const action = {
-                origin: 'USER',
-                request: 'GO_TO_NEXT_STEP'
-            }
-            document.dispatchEvent(new CustomEvent('action', {detail: action}))
-        }
-        this.goToPrevStep = () => {
-            const action = {
-                origin: 'USER',
-                request: 'GO_TO_PREV_STEP'
-            }
-            document.dispatchEvent(new CustomEvent('action', {detail: action}))           
+        this.state = {
+            algorithm: 'BUBBLE',
         }
 
         this.togglePlay = this.togglePlay.bind(this)
         this.addRandom = this.addRandom.bind(this)
+        this.goToPrevStep = this.goToPrevStep.bind(this)
+        this.goToNextStep = this.goToNextStep.bind(this)
+    }
+
+    goToNextStep() {
+        const action = {
+            origin: 'USER',
+            request: 'GO_TO_NEXT_STEP'
+        }
+        document.dispatchEvent(new CustomEvent('action', {detail: action}))        
+    }
+
+    goToPrevStep() {
+        const action = {
+            origin: 'USER',
+            request: 'GO_TO_PREV_STEP'
+        }
+        document.dispatchEvent(new CustomEvent('action', {detail: action}))           
     }
 
     togglePlay() {
@@ -41,37 +47,43 @@ class SortVisualizer extends Component {
             request: 'ADD_RANDOM'
         }
         document.dispatchEvent(new CustomEvent('action', {detail: action}))
-        clearTimeout(this.autoPlay)
-        this.setState({
-            playing: !this.state.playing
-        })
-
     }
 
+    getRandomData() {
+        document.dispatchEvent(new CustomEvent('action', {detail: {request: 'FETCH_RANDOM'}}))
+    }
+
+    getWeatherData() {
+        document.dispatchEvent(new CustomEvent('action', {detail: {request: 'FETCH_WEATHER'}}))
+    }
+    
     render() {
-        const {playing} = this.props
-        const {width, height, sortState} = this.props
+        const {sortState} = this.props
         return (
             <div className="sort-visualizer">
-                <div className="barchart-container">
-                    <BarChart 
-                        bars={sortState.currentBars}
-                        width={width}
-                        height={height}  />
-                    <i className="fa fa-plus-square-o add-bar__btn" onClick={this.addRandom}></i>
-                </div>
-                <div className="control-bar">
-                    <i className="fa fa-backward control-bar__btn" onClick={this.goToPrevStep}></i>
-                    <i className={playing? 'fa fa-pause control-bar__btn' : 'fa fa-play control-bar__btn'} onClick={this.togglePlay}></i>
-                    <i className="fa fa-forward control-bar__btn" onClick={this.goToNextStep}></i>
-                </div>
+                <AlgoSelector 
+                    algorithm={this.props.algorithm}
+                    selectAlgo={this.props.selectAlgo} />
+                
+                <BarChart 
+                    bars={sortState.currentBars}
+                    width={'600px'}
+                    height={'300px'}  />
+
+                <ControlBar 
+                    playing={this.props.playing}
+                    goToNextStep={this.goToNextStep}
+                    goToPrevStep={this.goToPrevStep}
+                    togglePlay={this.togglePlay}
+                    getRandomData={this.getRandomData}
+                    getWeatherData={this.getWeatherData}
+                    addRandom={this.addRandom} />
             </div>
-        );
+        )
     }
 }
 
 SortVisualizer.propTypes = {
-    additionalStates: PropTypes.object,
     width: PropTypes.string,
     height: PropTypes.string
 }
