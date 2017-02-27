@@ -129,6 +129,7 @@ h1 {
 
 .title {
   position: relative;
+  text-align: center;
 }
 
 .sort-type {

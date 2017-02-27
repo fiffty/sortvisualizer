@@ -42,7 +42,8 @@ class AlgoSelector extends Component {
             <div className="sort-type__option" onClick={this.selectBubbleSort}>bubble sort</div>
             <div className="sort-type__option" onClick={this.selectSelectSort}>select sort</div>
           </div>
-          : null}        
+          : null}
+					<p>I made this app as a little experiment to test using RxJS with React. You can read about it <a href="https://medium.com/@fiffty/building-a-sort-algorithm-visualizer-with-react-and-rxjs-9799f91e541b#.boe4w3oac" target="blank">here.</a></p>        
         </div>
 		)
 	}
