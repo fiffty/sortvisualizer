@@ -36,7 +36,7 @@ class AlgoSelector extends Component {
 	render() {
 		return (
         <div className="title">
-          <h1><span className="sort-type" onClick={this.toggleDropdown}>{this.props.algorithm}</span> SORT VISUALIZER</h1>
+          <h1><span className="sort-type" onClick={this.toggleDropdown}><i className="fa fa-caret-square-o-down" aria-hidden="true"></i> {this.props.algorithm} </span> SORT VISUALIZER</h1>
           {this.state.dropdownActive? 
           <div className="sort-type__select">
             <div className="sort-type__option" onClick={this.selectBubbleSort}>bubble sort</div>
